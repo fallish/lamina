@@ -18,7 +18,7 @@ class DynamicGeoJsonTooltip(Tooltip):
     Parameters
     ----------
     fields: list or tuple.
-        Labels of GeoJson/TopoJson 'properties' or GeoPandas GeoDataFrame
+        Labels of DynamicGeoJson 'properties'
         columns you'd like to display.
     aliases: list/tuple of strings, same length/order as fields, default None.
         Optional aliases you'd like to display in the tooltip as field name
@@ -101,8 +101,6 @@ class DynamicGeoJsonTooltip(Tooltip):
                                                 ' the same length.'
         assert isinstance(labels, bool), 'labels requires a boolean value.'
         assert isinstance(localize, bool), 'localize must be bool.'
-        assert 'permanent' not in kwargs, 'The `permanent` option does not ' \
-                                          'work with GeoJsonTooltip.'
 
         self.fields = fields
         self.aliases = aliases
@@ -114,30 +112,6 @@ class DynamicGeoJsonTooltip(Tooltip):
             # noqa outside of type checking.
             self.style = style
 
-    def warn_for_geometry_collections(self):
-        """Checks for GeoJson GeometryCollection features to warn user about incompatibility."""
-        geom_collections = [
-            feature.get('properties') if feature.get('properties') is not None else key
-            for key, feature in enumerate(self._parent.data['features'])
-            if feature['geometry']['type'] == 'GeometryCollection'
-        ]
-        if any(geom_collections):
-            warnings.warn(
-                "DynamicGeoJsonTooltip is not configured to render tooltips for GeoJson GeometryCollection geometries. "
-                "Please consider reworking these features: {} to MultiPolygon for full functionality.\n"
-                "https://tools.ietf.org/html/rfc7946#page-9".format(geom_collections), UserWarning)
-
     def render(self, **kwargs):
         """Renders the HTML representation of the element."""
-        # if isinstance(self._parent, DynamicGeoJson):
-        #     keys = tuple(self._parent.data['features'][0]['properties'].keys())
-        #     self.warn_for_geometry_collections()
-        # else:
-        #     raise TypeError('You cannot add a GeoJsonTooltip to anything else '
-        #                     'than a DynamicGeoJson  object.')
-        # keys = tuple(x for x in keys if x not in ('style', 'highlight'))
-        # for value in self.fields:
-        #     assert value in keys, ('The field {} is not available in the data. '
-        #                            'Choose from: {}.'.format(value, keys))
-
         super(DynamicGeoJsonTooltip, self).render(**kwargs)
